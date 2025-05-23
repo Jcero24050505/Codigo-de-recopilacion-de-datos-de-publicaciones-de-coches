@@ -1,0 +1,183 @@
+from playwright.sync_api import sync_playwright
+from bs4 import BeautifulSoup
+import re # Importar para expresiones regulares
+
+url = "https://www.motorflash.com/coches-nuevos/"
+
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    # browser = p.chromium.launch(headless=False) # Para ver el navegador
+
+    page = browser.new_page()
+
+    print("Abriendo la página...")
+    page.goto(url)
+
+    print("Esperando a que los elementos de coches se carguen...")
+    try:
+        page.wait_for_selector('div.item-listado', timeout=20000)
+        print("Elementos de coches encontrados. Procediendo a extraer HTML...")
+    except Exception as e:
+        print(f"Error: El selector 'div.item-listado' no se encontró a tiempo. {e}")
+        browser.close()
+        exit()
+
+    page_content = page.content()
+    soup = BeautifulSoup(page_content, 'html.parser')
+
+    coches = soup.find_all('div', class_='item-listado')
+
+    if not coches:
+        print("Error: No se encontraron elementos de coches con la clase 'item-listado' después de la carga dinámica.")
+    else:
+        print(f"Se encontraron {len(coches)} coches.")
+        results = [] # Lista para almacenar los diccionarios de cada coche
+
+        for i, coche in enumerate(coches[:10]): # Limita a los primeros 10 para el ejemplo
+            # Inicializar todos los campos con N/A
+            data = {
+                'Título': 'N/A',
+                'Precio Contado': 'N/A',
+                'Precio Financiado': 'N/A',
+                'Año': 'N/A',
+                'Kilómetros': 'N/A',
+                'CV': 'N/A',
+                'Tipo Combustible': 'N/A',
+                'Color': 'N/A',
+                'Ubicación': 'N/A',
+                'Extras': [],
+                'Anunciante': 'N/A',
+                'Telefono': 'N/A',
+                'Imagenes': [] # Nuevo campo para las URLs de las imágenes
+            }
+
+            try:
+                # Extraer Título y CV (potencia)
+                titulo_tag = coche.find('p', class_='h2-style')
+                if titulo_tag:
+                    data['Título'] = titulo_tag.get_text(separator=' ', strip=True)
+                    cv_match = re.search(r'\((\d+ CV)\)', data['Título'])
+                    if cv_match:
+                        data['CV'] = cv_match.group(1)
+
+                # Extraer Precios
+                precios_div = coche.find('div', class_='item-listado-precio')
+                if precios_div:
+                    all_price_uls = precios_div.find_all('ul', class_='precios')
+
+                    if len(all_price_uls) > 0:
+                        precio_financiado_span = all_price_uls[0].find('span', class_='precio-oferta')
+                        if precio_financiado_span:
+                            data['Precio Financiado'] = precio_financiado_span.get_text(strip=True).replace('€', '').strip()
+
+                    if len(all_price_uls) > 1:
+                        precio_contado_b = all_price_uls[1].find('b')
+                        if precio_contado_b:
+                            data['Precio Contado'] = precio_contado_b.get_text(strip=True).replace('€', '').strip()
+
+                # Extraer Tipo Combustible, Color, Ubicación, Año y Kilómetros
+                general_list = coche.find('ul', class_='general')
+                if general_list:
+                    list_items = general_list.find_all('li')
+                    
+                    if len(list_items) > 0:
+                        data['Tipo Combustible'] = list_items[0].get_text(strip=True).replace('/', '').strip()
+                    
+                    if len(list_items) > 1:
+                        data['Color'] = list_items[1].get_text(strip=True).replace('/', '').strip()
+                        
+                    if len(list_items) > 2:
+                        data['Ubicación'] = list_items[2].get_text(strip=True).replace('/', '').strip()
+
+                    for item in list_items:
+                        item_text = item.get_text(strip=True)
+                        
+                        if 'km' in item_text.lower():
+                            data['Kilómetros'] = item_text.replace('/', '').strip()
+                            data['Kilómetros'] = re.sub(r'\s*km\s*/?\s*', 'km', data['Kilómetros'], flags=re.IGNORECASE).strip()
+
+                        year_match = re.search(r'-?(\d{4})', item_text)
+                        if year_match:
+                            extracted_year = year_match.group(1)
+                            if 1900 <= int(extracted_year) <= 2100: 
+                                data['Año'] = extracted_year
+                
+                # Extraer Extras
+                extras_list = coche.find('ul', class_='extras')
+                if extras_list:
+                    extras_items = extras_list.find_all('li')
+                    for extra_item in extras_items:
+                        extra_text = extra_item.get_text(strip=True)
+                        if extra_text:
+                            data['Extras'].append(extra_text)
+
+                # Extraer Anunciante
+                anunciante_p = coche.find('p', class_='anunciante')
+                if anunciante_p:
+                    anunciante_a = anunciante_p.find('a')
+                    if anunciante_a:
+                        data['Anunciante'] = anunciante_a.get_text(strip=True)
+
+                # Extraer Teléfono
+                phone_link = coche.find('a', class_='call', href=re.compile(r'^tel:'))
+                if phone_link:
+                    phone_span = phone_link.find('span')
+                    if phone_span:
+                        data['Telefono'] = phone_span.get_text(strip=True)
+                elif not phone_link:
+                    phone_link_movil = coche.find('a', class_='call-movil', href=re.compile(r'^tel:'))
+                    if phone_link_movil:
+                        phone_span_movil = phone_link_movil.find('span')
+                        if phone_span_movil:
+                            data['Telefono'] = phone_span_movil.get_text(strip=True)
+                        elif phone_link_movil.get('data-tel'):
+                            data['Telefono'] = phone_link_movil['data-tel'].strip()
+
+                # --- NUEVA SECCIÓN: Extraer URLs de Imágenes ---
+                # Buscar todas las etiquetas <img> y <source> dentro del bloque del coche
+                # Las imágenes en carruseles a menudo usan 'data-src' para carga diferida o 'srcset'
+                img_tags = coche.find_all(['img', 'source'])
+                
+                for img_tag in img_tags:
+                    img_url = None
+                    # Priorizar data-srcset si existe y es una URL válida (para imágenes responsivas)
+                    if img_tag.has_attr('data-srcset') and img_tag['data-srcset'].strip():
+                        # data-srcset puede contener múltiples URLs separadas por coma y espacio
+                        # Tomamos la primera URL antes del primer espacio (que indica la resolución)
+                        urls_in_srcset = img_tag['data-srcset'].split(',')[0].strip().split(' ')[0]
+                        if urls_in_srcset.startswith('http'):
+                            img_url = urls_in_srcset
+                    # Si no hay data-srcset, probar data-src
+                    elif img_tag.has_attr('data-src') and img_tag['data-src'].startswith('http'):
+                        img_url = img_tag['data-src']
+                    # Finalmente, probar src si no se encontró en las anteriores
+                    elif img_tag.has_attr('src') and img_tag['src'].startswith('http'):
+                        img_url = img_tag['src']
+                    
+                    # Asegurarse de que la URL no sea una imagen de certificado (ya la habíamos visto)
+                    # Y que sea una URL de imagen de coche real
+                    if img_url and 'motorflash.com/filter' in img_url and 'certificados' not in img_url and img_url not in data['Imagenes']:
+                        data['Imagenes'].append(img_url)
+
+                results.append(data)
+
+                # Imprimir para ver los resultados
+                print(f"\n--- Coche {i+1} ---")
+                for key, value in data.items():
+                    if isinstance(value, list):
+                        if key == 'Imagenes': # Imprimir URLs de imágenes una por línea para mayor claridad
+                            print(f"{key}:")
+                            for url in value:
+                                print(f"  - {url}")
+                        else:
+                            print(f"{key}: {', '.join(value)}")
+                    else:
+                        print(f"{key}: {value}")
+
+
+            except Exception as e:
+                print(f"Error al procesar el coche {data.get('Título', 'N/A')}: {e}")
+
+    browser.close()
+    print("\nNavegador cerrado.")
+    print("\nTodos los datos extraídos se encuentran en la lista 'results'.")
