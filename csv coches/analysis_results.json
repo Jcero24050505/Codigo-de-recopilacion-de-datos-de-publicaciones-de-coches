@@ -1,0 +1,32 @@
+{
+    "fecha_generacion": "2025-06-13T13:48:51.294227",
+    "total_coches_procesados": 106,
+    "coches_exitosos": 102,
+    "coches_fallidos": 4,
+    "total_imagenes_descargadas": 2525,
+    "promedio_imagenes_por_coche": 25.0,
+    "promedio_peso_kb": 122.24,
+    "promedio_dimensiones_px": "1440x1081",
+    "errores_descarga_por_anuncio": {
+        "ac3ad1cca673cc94297b9fb432c44500": [
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg",
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg",
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg"
+        ],
+        "2d4fc7d1f84592a66e44d1e7f4d5226d": [
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg",
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg",
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg"
+        ],
+        "5b6b857879a4b47578e802eae5fc1d2d": [
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg",
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg",
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg"
+        ],
+        "1a6fb389dc744d5bb6bd8fc3f09830ef": [
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg",
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg",
+            "Error de red o HTTP al descargar No se encontraron URLs de imágenes en HTML..jpg: Failed to parse: No se encontraron URLs de imágenes en HTML..jpg"
+        ]
+    }
+}

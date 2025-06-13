@@ -1,0 +1,94 @@
+/* styles.css */
+
+/* Estilos existentes */
+.hero.is-primary.is-bold {
+    background: linear-gradient(to right, #00d1b2, #48c78e); /* Ejemplo de gradiente */
+}
+
+/* Contenedor del carrusel en el modal */
+#modal-images-gallery {
+    display: flex;
+    flex-direction: column; /* Apila los elementos (imagen y navegación) verticalmente */
+    align-items: center;   /* Centra los elementos horizontalmente en el eje transversal (horizontal) */
+    width: 100%; /* Asegura que el contenedor ocupe todo el ancho disponible */
+}
+
+.carousel-image-container {
+    height: 350px;
+    width: 100%; /* El contenedor de la imagen ocupa todo el ancho del #modal-images-gallery */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #ffffff;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.carousel-image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+.carousel-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* margin-top: 10px;  Asegura espacio entre la imagen y los botones */
+}
+
+.carousel-navigation .button {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    padding: 0 10px;
+}
+
+.carousel-navigation .button .fas {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+
+/* Estilos para las imágenes de portada de las cards */
+.card-image .image {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.card-image .image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Opcional: Un poco de sombra o efecto para las cards */
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* --- CAMBIO CLAVE: Aumentar el tamaño del modal-card --- */
+.modal-card {
+    width: 150%; /* Porcentaje del ancho de la ventana */
+    max-width: 1250px; /* Limita el ancho máximo para pantallas muy grandes */
+    /* Puedes ajustar estos valores según tus preferencias */
+}
+
+/* Ajustes para pantallas más pequeñas para el modal */
+@media screen and (max-width: 768px) {
+    .modal-card {
+        width: 95%; /* Un poco más de ancho en móviles */
+        max-width: none; /* Elimina la limitación de ancho máximo en pantallas pequeñas */
+    }
+}
